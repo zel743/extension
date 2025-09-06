@@ -1,20 +1,67 @@
-document.getElementById('start').addEventListener('click', () => {
+// Utilidad rápida
+const $ = (id) => document.getElementById(id);
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1) Mostrar notificación si el background dejó una pendiente
+  const { pendingNotification } = await chrome.storage.local.get('pendingNotification');
+  if (pendingNotification) {
+    $('notification')?.classList.remove('hidden');
+    chrome.storage.local.remove('pendingNotification');
+  }
+
+  // 2) Pintar tiempo actual del timer
+  chrome.runtime.sendMessage({ command: 'getState' }, (state) => {
+    if (!state) return;
+    const minutes = Math.floor(state.time / 60).toString().padStart(2, '0');
+    const seconds = (state.time % 60).toString().padStart(2, '0');
+    $('timer').textContent = `${minutes}:${seconds}`;
+  });
+
+  // 3) Botones Pomodoro
+  $('start')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ command: 'start' });
-    document.getElementById('reset').disabled = false; // Enable the "Reset" button
-});
-
-document.getElementById('stop').addEventListener('click', () => {
+    $('reset') && ($('reset').disabled = false);
+  });
+  $('stop')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ command: 'stop' });
-    // Optionally decide if the "Reset" button should be enabled or disabled here
-});
-
-document.getElementById('reset').addEventListener('click', () => {
+  });
+  $('reset')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ command: 'reset' });
+  });
+
+  // 4) Botones de notificación
+  $('startBreak')?.addEventListener('click', () => {
+    $('notification')?.classList.add('hidden');
+    chrome.runtime.sendMessage({ command: 'startBreak' });
+  });
+  $('skipBreak')?.addEventListener('click', () => {
+    $('notification')?.classList.add('hidden');
+    chrome.runtime.sendMessage({ command: 'skipBreak' });
+  });
+
+  // 5) Toggle OpenDyslexic GLOBAL
+  const toggleOD = $('toggleOpenDyslexic');
+  const { odGlobal = false } = await chrome.storage.local.get('odGlobal');
+  if (toggleOD) toggleOD.checked = !!odGlobal;
+
+  toggleOD?.addEventListener('change', async (e) => {
+    const enabled = e.target.checked;
+    try {
+      await chrome.runtime.sendMessage({ command: 'setODGlobal', enabled });
+    } catch (err) {
+      console.error('Error al aplicar OpenDyslexic global:', err);
+      // revertir visual si falla
+      toggleOD.checked = !enabled;
+    }
+  });
 });
 
-// Listener for messages from the background script to update the timer display
+// 6) Listener para actualizaciones en tiempo real desde el background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.timer) {
-        document.getElementById('timer').textContent = message.timer;
-    }
+  if (message.timer) {
+    $('timer').textContent = message.timer;
+  }
+  if (message.showNotification) {
+    $('notification')?.classList.remove('hidden');
+  }
 });

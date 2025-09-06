@@ -3,7 +3,8 @@
   "name": "Pomodoro Timer",
   "version": "1.0",
   "description": "A simple Pomodoro timer to help you manage your work and break times.",
-  "permissions": ["alarms", "notifications"],
+  "permissions": ["alarms", "storage", "notifications", "scripting", "tabs"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -12,12 +13,22 @@
       "128": "images/tomato128.jpg"
     }
   },
-  "background": {
-    "service_worker": "background.js"
-  },
+  "background": { "service_worker": "background.js" },
   "icons": {
     "16": "images/tomato16.jpg",
     "48": "images/tomato48.jpg",
     "128": "images/tomato128.jpg"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "font.css",
+        "fonts/OpenDyslexic-Regular.woff2",
+        "fonts/OpenDyslexic-Bold.woff2",
+        "fonts/OpenDyslexic-Italic.woff2",
+        "fonts/OpenDyslexic-BoldItalic.woff2"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

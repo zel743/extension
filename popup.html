@@ -5,12 +5,32 @@
     <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
 <body>
+    <div id="notification" class="notification hidden">
+        <div class="notification-content">
+            <h3>Time is up!</h3>
+            <p>Take a break, your session is complete.</p>
+            <div class="notification-buttons">
+                <button id="startBreak">Start Break</button>
+                <button id="skipBreak">Skip Break</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="timer">25:00</div>
-    <button id="start">Start</button>
-     <button id="stop">Stop</button>
-    <button id="reset" disabled>Reset</button>
-
+    <div id="main-content">
+        <h1>TDAH App</h1>
+        <h2>Pomodoro Timer</h2>
+        <div id="timer">00:10</div>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+        <button id="reset">Reset</button>
+        <br>
+   </div>
+<div style="margin-top:12px">
+  <label>
+    <input type="checkbox" id="toggleOpenDyslexic" />
+    Cambiar Fuente 
+  </label>
+</div> 
     <script src="popup.js"></script>
 </body>
 </html>
