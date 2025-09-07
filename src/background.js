@@ -13,6 +13,8 @@ let isBreakTime = false
 let currentTabId = null
 let focusEnforcer = null
 let currentPageReason = ''
+// last allowed URL to enforce navigation within saved domains during focus
+let lastAllowedUrl = ''
 
 // ====== Main message listener ======
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -143,6 +145,8 @@ async function startTimer() {
 
       currentTabId = tab.id
       currentPageReason = currentPage.reason // Store the reason for notifications
+      // store the initial allowed URL for focus enforcement
+      lastAllowedUrl = tab.url
     }
 
     isRunning = true
@@ -276,20 +280,17 @@ function startEnforcer() {
         }
         if (allowSwitch) {
           currentTabId = activeTab.id
+          lastAllowedUrl = activeTab.url
           return
         }
-        if (activeTab.id !== currentTabId) {
-          // Redirect back to work tab first
-          chrome.tabs.update(currentTabId, { active: true })
-
-          // Then show alert on the main work tab
-          setTimeout(() => {
-            showAlertNotification(
-              currentTabId,
-              `Please stay focused on this tab until the timer ends. \n ${currentPageReason}`,
-            )
-          }, 300)
-        }
+        // Redirect back and restore last allowed URL when navigating outside saved domains
+        chrome.tabs.update(currentTabId, { active: true, url: lastAllowedUrl })
+        setTimeout(() => {
+          showAlertNotification(
+            currentTabId,
+            `Please stay focused on this tab until the timer ends. \n ${currentPageReason}`,
+          )
+        }, 300)
       }
     }
   }, 1000)
