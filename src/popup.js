@@ -186,6 +186,12 @@ async function savePage() {
 
   const reason = reasonInput.value.trim()
 
+  // Prevent saving without a reason
+  if (!reason) {
+    alert('Please provide a reason to save this page.')
+    return
+  }
+
   try {
     const { savedPages = [] } = await chrome.storage.local.get('savedPages')
     // Save by domain origin and prevent duplicates
