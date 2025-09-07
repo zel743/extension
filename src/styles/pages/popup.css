@@ -1,24 +1,6 @@
 @import '../utils/vars.css';
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-}
-
-.hidden,
-.is-hidden {
-  display: none !important;
-}
-
 .app {
-  width: 360px;
-  padding: 18px;
   margin: 0 auto;
 }
 
@@ -43,7 +25,6 @@ body {
   align-items: center;
   justify-content: space-between;
   font-weight: 600;
-  font-size: 13px;
 }
 
 /* iOS-like switch */
@@ -163,7 +144,8 @@ body {
 }
 
 .modal-content textarea {
-  width: 100%;
+  width: 90%;
+  margin: 0 auto;
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -284,38 +266,44 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+
+  h3 {
+    font-weight: bold;
+  }
+
 }
 
-.notes-header h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
+
+
+button {
+  background-color: transparent;
+  border: none;
+  padding: 0px;
 }
 
 .add-button {
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  background-color: var(--color-primary-900);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
   cursor: pointer;
-  font-size: 16px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.4rem;
+  color: var(--color-foreground-100);
+  transition: opacity 300ms ease;
 }
 
 .add-button:hover {
-  background: #45a049;
+  opacity: 0.65;
+  transition: opacity 300ms ease;
 }
 
 /* Notes list */
 .notes-list {
-  max-height: 200px;
+  margin-top: 2rem;
+  width: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -325,17 +313,17 @@ body {
 }
 
 .notes-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  /* background: #f1f1f1; */
   border-radius: 3px;
 }
 
 .notes-list::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  /* background: #c1c1c1; */
   border-radius: 3px;
 }
 
 .notes-list::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  /* background: #a8a8a8; */
 }
 
 .note {
@@ -345,7 +333,7 @@ body {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-bottom: 8px;
-  background: white;
+  background: var(--color-background-600);
   transition: box-shadow 0.2s ease;
 }
 
@@ -361,7 +349,6 @@ body {
 .note-thumb strong {
   display: block;
   font-size: 13px;
-  color: #333;
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -369,8 +356,8 @@ body {
 }
 
 .note-url {
-  font-size: 11px;
-  color: #666;
+  font-size: 1.2rem;
+  font-weight: bold;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
