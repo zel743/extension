@@ -8,26 +8,20 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "images/taza-caliente.png",
-      "48": "images/taza-caliente.png",
-      "128": "images/taza-caliente.png"
+      "16": "public/images/taza-caliente.png",
+      "48": "public/images/taza-caliente.png",
+      "128": "public/images/taza-caliente.png"
     }
   },
   "background": { "service_worker": "background.js" },
   "icons": {
-    "16": "images/tomato16.jpg",
-    "48": "images/taza-caliente.png",
-    "128": "images/tomato128.jpg"
+    "16": "public/images/tomato16.jpg",
+    "48": "public/images/taza-caliente.png",
+    "128": "public/images/tomato128.jpg"
   },
   "web_accessible_resources": [
     {
-      "resources": [
-        "font.css",
-        "fonts/OpenDyslexic-Regular.woff2",
-        "fonts/OpenDyslexic-Bold.woff2",
-        "fonts/OpenDyslexic-Italic.woff2",
-        "fonts/OpenDyslexic-BoldItalic.woff2"
-      ],
+      "resources": ["public"],
       "matches": ["<all_urls>"]
     }
   ],

@@ -1,0 +1,28 @@
+{
+  "name": "extension",
+  "version": "1.0.0",
+  "description": "",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "prettier . --check",
+    "lint:fix": "prettier . --write",
+    "build:dev": "bun build --outdir=dist src/background.js src/popup.js && bun run scripts/copy_files.js",
+    "build:prod": "bun build --production "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zel743/extension.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/zel743/extension/issues"
+  },
+  "homepage": "https://github.com/zel743/extension#readme",
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}
