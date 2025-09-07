@@ -1,9 +1,14 @@
 @import '../utils/vars.css';
 
+/* Base app */
 .app {
   margin: 0 auto;
+  color: var(--color-foreground-100);
+  background: var(--color-background-900);
+  font-family: var(--font-family, inherit);
 }
 
+/* Tarjetas/bloques */
 .block {
   background: var(--card);
   border: 1px solid var(--stroke);
@@ -13,11 +18,13 @@
   margin-bottom: 14px;
 }
 
+/* Branding */
 .logo {
   text-align: center;
   font-weight: 700;
   letter-spacing: 0.5px;
   font-size: 18px;
+  color: var(--color-foreground-100);
 }
 
 .option {
@@ -25,6 +32,7 @@
   align-items: center;
   justify-content: space-between;
   font-weight: 600;
+  color: var(--color-foreground-100);
 }
 
 /* iOS-like switch */
@@ -40,9 +48,10 @@
 .slider {
   position: absolute;
   inset: 0;
-  background: #c9c7d4;
+  background: var(--color-background-600);
+  border: 1px solid var(--stroke);
   border-radius: 100px;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 .slider::after {
   content: '';
@@ -51,26 +60,30 @@
   top: 3px;
   width: 20px;
   height: 20px;
-  background: white;
+  background: var(--color-foreground-100);
+  border: 1px solid var(--stroke);
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   transition: transform 0.2s ease;
 }
 .switch input:checked + .slider {
-  background: #6c63ff;
+  background: var(--color-primary-900);
+  border-color: transparent;
 }
 .switch input:checked + .slider::after {
   transform: translateX(20px);
 }
 
+/* Panel */
 .panel .pomodoro-stats {
-  background: #f1f1f4;
+  background: var(--color-background-700);
   border: 1px solid var(--stroke);
   border-radius: 12px;
   padding: 10px 12px;
   margin-bottom: 10px;
   line-height: 1.5;
   font-weight: 600;
+  color: var(--color-foreground-100);
 }
 
 .timer {
@@ -79,15 +92,17 @@
   margin: 6px 0 10px;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+  color: var(--color-foreground-100);
 }
 .timer-hint {
   text-align: center;
   font-size: 12px;
-  color: #666;
+  color: var(--color-foreground-300);
   margin: 5px 0;
   font-style: italic;
 }
 
+/* Controles */
 .controls {
   display: flex;
   gap: 8px;
@@ -95,192 +110,175 @@
 }
 .controls button {
   border: 1px solid var(--stroke);
-  background: white;
+  background: var(--color-background-700);
+  color: var(--color-foreground-100);
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
 }
 .controls button:hover {
-  background: #f6f6f8;
+  background: var(--color-background-600);
+}
+.controls button:active {
+  transform: translateY(1px);
+}
+.controls button:disabled {
+  cursor: not-allowed;
+  background-color: var(--color-background-700);
+  color: var(--color-foreground-300);
+  opacity: 0.6;
+}
+.controls button:disabled:hover {
+  background-color: var(--color-background-700);
+  filter: none;
 }
 
-/* Modal styles */
+/* Modal */
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
-
 .modal-content {
-  background: white;
+  background: var(--card);
+  border: 1px solid var(--stroke);
   padding: 20px;
   border-radius: 12px;
   width: 320px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow);
+  color: var(--color-foreground-100);
 }
-
 .modal-content h3 {
   margin: 0 0 15px 0;
-  color: #333;
+  color: var(--color-foreground-100);
   font-size: 16px;
   font-weight: 600;
 }
-
 .modal-content p {
   margin: 10px 0;
-  color: #666;
+  color: var(--color-foreground-300);
   font-size: 13px;
   line-height: 1.4;
 }
-
 .modal-content textarea {
   width: 90%;
-  margin: 0 auto;
+  margin: 0 auto 15px;
   padding: 12px;
-  border: 1px solid #ddd;
+  background: var(--color-background-900);
+  color: var(--color-foreground-100);
+  border: 1px solid var(--stroke);
   border-radius: 6px;
   resize: vertical;
-  margin-bottom: 15px;
   font-family: inherit;
   font-size: 13px;
 }
 
-.modal-buttons {
+/* Botoneras modal */
+.modal-buttons,
+.modal-buttons-vertical {
   display: flex;
   gap: 10px;
   justify-content: center;
 }
-
 .modal-buttons-vertical {
-  display: flex;
   flex-direction: column;
-  gap: 8px;
   width: 100%;
 }
-
-.modal-buttons button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
-}
-
+.modal-buttons button,
 .modal-buttons-vertical button {
-  width: 100%;
-  padding: 12px;
-  border: none;
+  padding: 10px 16px;
+  border: 1px solid var(--stroke);
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  background: var(--color-background-700);
+  color: var(--color-foreground-100);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.modal-buttons button:hover,
+.modal-buttons-vertical button:hover {
+  background: var(--color-background-600);
 }
 
-/* Button colors */
+/* Colores de acción */
 #savePage {
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--color-green);
+  color: var(--color-background-900);
+  border-color: transparent;
 }
-
 #savePage:hover {
-  background-color: #45a049;
+  filter: brightness(0.95);
 }
 
-#saveUpdateReason {
-  background-color: #2196f3;
-  color: white;
+#saveUpdateReason,
+.update-btn {
+  background-color: var(--color-primary-800);
+  color: var(--color-background-900);
+  border-color: transparent;
 }
-
-#saveUpdateReason:hover {
-  background-color: #1976d2;
+#saveUpdateReason:hover,
+.update-btn:hover {
+  filter: brightness(0.95);
 }
 
 #removePage,
-#confirmDelete {
-  background-color: #f44336;
-  color: white;
-}
-
-#removePage:hover,
-#confirmDelete:hover {
-  background-color: #d32f2f;
-}
-
-.update-btn {
-  background-color: #2196f3;
-  color: white;
-}
-
-.update-btn:hover {
-  background-color: #1976d2;
-}
-
+#confirmDelete,
 .remove-btn {
-  background-color: #f44336;
-  color: white;
+  background-color: #d95757; /* rojo controlado para contraste sobre dark */
+  color: var(--color-foreground-100);
+  border-color: transparent;
 }
-
+#removePage:hover,
+#confirmDelete:hover,
 .remove-btn:hover {
-  background-color: #d32f2f;
+  filter: brightness(0.95);
 }
 
-.cancel-btn {
-  background-color: #ccc;
-  color: #333;
-}
-
-.cancel-btn:hover {
-  background-color: #bbb;
-}
-
+.cancel-btn,
 #cancelAddPage,
 #cancelNoteMenu,
 #cancelUpdateReason,
 #cancelDelete {
-  background-color: #ccc;
-  color: #333;
+  background-color: var(--color-background-700);
+  color: var(--color-foreground-100);
 }
-
+.cancel-btn:hover,
 #cancelAddPage:hover,
 #cancelNoteMenu:hover,
 #cancelUpdateReason:hover,
 #cancelDelete:hover {
-  background-color: #bbb;
+  background-color: var(--color-background-600);
 }
 
-/* Notes header */
+/* Encabezado de notas */
 .notes-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  h3 {
-    font-weight: bold;
-  }
-
+}
+.notes-header h3 {
+  font-weight: bold;
+  color: var(--color-foreground-100);
 }
 
-
-
+/* Botón base */
 button {
   background-color: transparent;
   border: none;
-  padding: 0px;
+  padding: 0;
+  color: inherit;
 }
 
+/* CTA add */
 .add-button {
   background-color: var(--color-primary-900);
   padding: 0.5rem 1rem;
@@ -294,62 +292,56 @@ button {
   color: var(--color-foreground-100);
   transition: opacity 300ms ease;
 }
-
 .add-button:hover {
-  opacity: 0.65;
-  transition: opacity 300ms ease;
+  opacity: 0.85;
 }
 
-/* Notes list */
+/* Lista de notas */
 .notes-list {
   margin-top: 2rem;
   width: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
 }
-
 .notes-list::-webkit-scrollbar {
   width: 6px;
 }
-
 .notes-list::-webkit-scrollbar-track {
-  /* background: #f1f1f1; */
+  background: var(--color-background-800);
   border-radius: 3px;
 }
-
 .notes-list::-webkit-scrollbar-thumb {
-  /* background: #c1c1c1; */
+  background: var(--color-background-600);
   border-radius: 3px;
 }
-
 .notes-list::-webkit-scrollbar-thumb:hover {
-  /* background: #a8a8a8; */
+  background: var(--color-background-700);
 }
 
 .note {
   display: flex;
   align-items: center;
   padding: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--stroke);
   border-radius: 8px;
   margin-bottom: 8px;
   background: var(--color-background-600);
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
-
 .note:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  border-color: var(--color-primary-800);
 }
 
 .note-thumb {
   flex: 1;
   min-width: 0;
 }
-
 .note-thumb strong {
   display: block;
   font-size: 13px;
   margin-bottom: 4px;
+  color: var(--color-foreground-100);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -359,11 +351,13 @@ button {
   font-size: 1.2rem;
   font-weight: bold;
   margin: 0;
+  color: var(--color-primary-800);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Kebab */
 .kebab {
   background: none;
   border: none;
@@ -372,18 +366,17 @@ button {
   font-size: 16px;
   color: var(--color-foreground-100);
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
 .kebab:hover {
-  color: #333;
-  background-color: #f0f0f0;
+  background-color: var(--color-background-700);
+  color: var(--color-foreground-100);
 }
 
-/* Notification overlay */
+/* Notificación */
 .notification {
   position: fixed;
   inset: 0;
@@ -392,65 +385,61 @@ button {
   background: rgba(0, 0, 0, 0.35);
   z-index: 999;
 }
-
 .notification-content {
-  background: white;
+  background: var(--card);
+  color: var(--color-foreground-100);
+  border: 1px solid var(--stroke);
   border-radius: 14px;
   padding: 20px;
   width: 280px;
   text-align: center;
   box-shadow: var(--shadow);
 }
-
 .notification-content h3 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--color-foreground-100);
   font-size: 16px;
 }
-
 .notification-content p {
   margin: 0 0 15px 0;
-  color: #666;
+  color: var(--color-foreground-300);
   font-size: 13px;
 }
-
 .notification-buttons {
   display: flex;
   gap: 8px;
   justify-content: center;
 }
-
 .notification-buttons button {
   border: 1px solid var(--stroke);
-  background: #f6f6f8;
+  background: var(--color-background-700);
+  color: var(--color-foreground-100);
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
-
 .notification-buttons button:hover {
-  background: #e8e8e8;
-}
-.controls button:disabled {
-  cursor: not-allowed;
-  background-color: #f0f0f0;
-  color: #999;
+  background: var(--color-background-600);
 }
 
-.controls button:disabled:hover {
-  background-color: #f0f0f0;
-  filter: none;
+/* Accesibilidad/focus */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
 }
 
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 400px) {
   .app {
     width: 100%;
     padding: 12px;
   }
-
   .modal-content {
     width: 280px;
     margin: 0 10px;
