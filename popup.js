@@ -56,25 +56,37 @@ document.addEventListener('DOMContentLoaded', async () => {
       toggleOD.checked = !enabled;
     }
   });
+
+  // 6) Timer toggle persistence
+  const timerToggle = $('toggleTimer');
+  const timerSection = $('timerSection');
+
+  // Load stored state
+  const { showTimer = false } = await chrome.storage.local.get('showTimer');
+  if (timerToggle) timerToggle.checked = showTimer;
+  if (timerSection) {
+    if (showTimer) timerSection.classList.remove('is-hidden');
+    else timerSection.classList.add('is-hidden');
+  }
+
+  // Save state when toggled
+  timerToggle?.addEventListener('change', async function () {
+    const enabled = this.checked;
+    if (enabled) {
+      timerSection.classList.remove('is-hidden');
+    } else {
+      timerSection.classList.add('is-hidden');
+    }
+    await chrome.storage.local.set({ showTimer: enabled });
+  });
 });
 
-// 6) Listener para actualizaciones en tiempo real desde el background
+// 7) Listener para actualizaciones en tiempo real desde el background
 chrome.runtime.onMessage.addListener((message) => {
   if (message.timer) {
     $('timer').textContent = message.timer;
   }
   if (message.showNotification) {
     $('notification')?.classList.remove('hidden');
-  }
-});
-// Timer toggle functionality
-const timerToggle = $('toggleTimer');
-const timerSection = $('timerSection');
-
-timerToggle?.addEventListener('change', function () {
-  if (this.checked) {
-    timerSection.classList.remove('is-hidden');
-  } else {
-    timerSection.classList.add('is-hidden');
   }
 });
