@@ -1,8 +1,15 @@
+// ====== Configuration ======
+const WORK_TIME = 10; // 10 seconds for testing (change to 25 * 60 for 25min)
+const BREAK_TIME = 5 * 60; // 5 minutes break
+
 let countdown;
-let time = 10; // pruebas
+let time = WORK_TIME;
 let isRunning = false;
 let isBreakTime = false;
+let currentTabId = null;
+let focusEnforcer = null;
 
+// ====== Main message listener ======
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.command === 'start') {
     isBreakTime = false;
@@ -99,11 +106,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// ====== Pomodoro ======
-function startTimer() {
+// ====== Pomodoro Timer Functions ======
+async function startTimer() {
   if (!isRunning) {
     isRunning = true;
     clearInterval(countdown);
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab) currentTabId = tab.id;
+
+    startEnforcer();
+
     countdown = setInterval(() => {
       if (time > 0) {
         time--;
@@ -119,19 +132,20 @@ function stopTimer() {
   if (isRunning) {
     isRunning = false;
     clearInterval(countdown);
+    stopEnforcer();
   }
 }
 
 function resetTimer() {
   stopTimer();
   isBreakTime = false;
-  time = 10; // o 25 * 60
+  time = WORK_TIME;
   updatePopup();
 }
 
 function startBreakTimer() {
   isBreakTime = true;
-  time = 5 * 60; // 5 minutos de descanso
+  time = BREAK_TIME;
   startTimer();
 }
 
@@ -184,7 +198,75 @@ chrome.notifications.onClicked.addListener((notificationId) => {
 function completeTimer() {
   clearInterval(countdown);
   isRunning = false;
+  stopEnforcer();
   showSystemNotification();
   chrome.storage.local.set({ pendingNotification: true });
   chrome.runtime.sendMessage({ showNotification: true }, () => {});
+}
+
+// ====== Alert Notification ======
+function showAlertNotification(tabId, message) {
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    func: (msg) => {
+      alert('⏰ Pomodoro Focus\n' + msg);
+    },
+    args: [message]
+  });
+}
+
+// ====== Tab Focus Enforcement ======
+function startEnforcer() {
+  if (focusEnforcer) return;
+  focusEnforcer = setInterval(async () => {
+    if (isRunning && !isBreakTime && currentTabId) {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (activeTab && activeTab.id !== currentTabId) {
+        // Redirect back to work tab first
+        chrome.tabs.update(currentTabId, { active: true });
+        
+        // Then show alert on the main work tab
+        setTimeout(() => {
+          showAlertNotification(currentTabId, 'Please stay focused on this tab until the timer ends.');
+        }, 300);
+      }
+    }
+  }, 1000);
+}
+
+function stopEnforcer() {
+  if (focusEnforcer) {
+    clearInterval(focusEnforcer);
+    focusEnforcer = null;
+  }
+}
+
+// ====== Tab Switching Prevention ======
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  handleTabChange(activeInfo.tabId);
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === "complete") {
+    handleTabChange(tabId);
+  }
+});
+
+function handleTabChange(newTabId) {
+  if (isRunning && !isBreakTime) {
+    if (currentTabId && newTabId !== currentTabId) {
+      // Redirect back to work tab first
+      chrome.tabs.update(currentTabId, { active: true });
+      
+      // Then show alert on the main work tab
+      setTimeout(() => {
+        showAlertNotification(currentTabId, 'You cannot change tabs until the timer ends. Stay focused on this tab!');
+      }, 300);
+    } else {
+      currentTabId = newTabId;
+    }
+  } else {
+    currentTabId = newTabId;
+  }
 }
