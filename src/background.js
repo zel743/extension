@@ -3,8 +3,8 @@ import { hello } from './pages/hello'
 hello()
 
 // ====== Configuration ======
-const WORK_TIME = 10 // 10 seconds for testing (change to 25 * 60 for 25min)
-const BREAK_TIME = 5 // 5 minutes break
+const WORK_TIME = 25 * 60 // 10 seconds for testing (change to 25 * 60 for 25min)
+const BREAK_TIME = 5 * 60 // 5 minutes break (5 * 60)
 
 let countdown
 let time = WORK_TIME
@@ -13,10 +13,18 @@ let isBreakTime = false
 let currentTabId = null
 let focusEnforcer = null
 let currentPageReason = ''
+// last allowed URL to enforce navigation within saved domains during focus
+let lastAllowedUrl = ''
 
 // ====== Main message listener ======
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.command === 'start') {
+  if (message.command === 'openSavedPage') {
+    ;(async () => {
+      const tab = await chrome.tabs.create({ url: message.url })
+      if (isRunning && !isBreakTime) currentTabId = tab.id
+    })()
+    return true
+  } else if (message.command === 'start') {
     isBreakTime = false
     startTimer()
   } else if (message.command === 'stop') {
@@ -123,7 +131,15 @@ async function startTimer() {
     })
     if (tab && tab.url) {
       const { savedPages = [] } = await chrome.storage.local.get('savedPages')
-      const currentPage = savedPages.find((page) => page.url === tab.url)
+      // Match saved domain origins or full URLs for legacy entries
+      const origin = (() => {
+        try {
+          return new URL(tab.url).origin
+        } catch {
+          return tab.url
+        }
+      })()
+      const currentPage = savedPages.find((page) => (page.origin || new URL(page.url).origin) === origin)
 
       if (!currentPage || !currentPage.reason) {
         // Don't start timer if page is not saved or has no reason
@@ -133,6 +149,8 @@ async function startTimer() {
 
       currentTabId = tab.id
       currentPageReason = currentPage.reason // Store the reason for notifications
+      // store the initial allowed URL for focus enforcement
+      lastAllowedUrl = tab.url
     }
 
     isRunning = true
@@ -291,11 +309,23 @@ function startEnforcer() {
         currentWindow: true,
       })
 
-      if (activeTab && activeTab.id !== currentTabId) {
-        // Redirect back to work tab first
-        chrome.tabs.update(currentTabId, { active: true })
-
-        // Then show alert on the main work tab
+      if (activeTab) {
+        // Allow switching within saved domains: update focus target if on a saved origin
+        let allowSwitch = false
+        try {
+          const { savedPages = [] } = await chrome.storage.local.get('savedPages')
+          const origin = new URL(activeTab.url).origin
+          allowSwitch = savedPages.some((p) => p.origin === origin)
+        } catch {
+          allowSwitch = false
+        }
+        if (allowSwitch) {
+          currentTabId = activeTab.id
+          lastAllowedUrl = activeTab.url
+          return
+        }
+        // Redirect back and restore last allowed URL when navigating outside saved domains
+        chrome.tabs.update(currentTabId, { active: true, url: lastAllowedUrl })
         setTimeout(() => {
           showAlertNotification(
             currentTabId,

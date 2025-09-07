@@ -8,16 +8,16 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "public/images/taza-caliente.png",
-      "48": "public/images/taza-caliente.png",
-      "128": "public/images/taza-caliente.png"
+      "16": "docs/logo_16x16_via_10015_io.png",
+      "48": "docs/logo_48x48_via_10015_io.png",
+      "128": "docs/logo_128x128_via_10015_io.png"
     }
   },
   "background": { "service_worker": "background.js" },
   "icons": {
-    "16": "public/images/tomato16.jpg",
-    "48": "public/images/taza-caliente.png",
-    "128": "public/images/tomato128.jpg"
+    "16": "docs/logo_16x16_via_10015_io.png",
+    "48": "docs/logo_48x48_via_10015_io.png",
+    "128": "docs/logo_128x128_via_10015_io.png"
   },
   "web_accessible_resources": [
     {

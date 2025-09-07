@@ -14,39 +14,66 @@ async function loadNotes() {
   const notesList = $('notesList')
   if (!notesList) return
 
+  // Load saved pages and migrate to origin-based storage if needed
   const { savedPages = [] } = await chrome.storage.local.get('savedPages')
+  // migrate legacy entries with full URL to origin (domain) entries
+  const migrated = savedPages.map((p) => {
+    if (p.origin) return p
+    try {
+      const u = new URL(p.url)
+      return { origin: u.origin, reason: p.reason, timestamp: p.timestamp, updated: p.updated }
+    } catch {
+      return p
+    }
+  })
+  if (JSON.stringify(migrated) !== JSON.stringify(savedPages)) {
+    await chrome.storage.local.set({ savedPages: migrated })
+  }
+  const pages = migrated
 
   notesList.innerHTML = ''
-
-  if (savedPages.length === 0) {
+  if (pages.length === 0) {
     notesList.innerHTML = '<div class="note"><div class="note-thumb">No saved pages yet</div></div>'
     return
   }
-
-  savedPages.forEach((note, index) => {
+  pages.forEach((note, index) => {
     const noteElement = document.createElement('div')
     noteElement.className = 'note'
-    noteElement.innerHTML = `
-      <div class="note-thumb" title="${note.url}">
+    {
+      const host = (() => {
+        try { return new URL(note.origin).hostname } catch { return note.origin }
+      })()
+      noteElement.innerHTML = `
+      <div class="note-thumb" title="${note.origin}">
         <strong>${note.reason || 'No reason provided'}</strong>
-        <div class="note-url">${note.url}</div>
+        <div class="note-url">${host}</div>
       </div>
       <button class="kebab" data-index="${index}" aria-label="note menu">…</button>
     `
+    }
     notesList.appendChild(noteElement)
+    // Allow opening saved page and update focus to new tab
+    const thumb = noteElement.querySelector('.note-thumb')
+    if (thumb) {
+      thumb.addEventListener('click', () => {
+        chrome.runtime.sendMessage({ command: 'openSavedPage', url: note.origin })
+        window.close()
+      })
+    }
   })
 
   // Add event listeners to kebab buttons
   document.querySelectorAll('.kebab').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const index = e.target.getAttribute('data-index')
-      showNoteMenu(index, savedPages[index].url, savedPages[index].reason)
+      const note = pages[index]
+      showNoteMenu(index, note.origin, note.reason)
     })
   })
 }
 
 // Función para mostrar menú de nota (updated to include reason)
-function showNoteMenu(index, url, reason) {
+function showNoteMenu(index, origin, reason) {
   currentNoteId = index
   const modal = $('noteMenuModal')
   if (modal) {
@@ -55,7 +82,7 @@ function showNoteMenu(index, url, reason) {
     if (modalContent) {
       modalContent.innerHTML = `
         <h3>PAGE OPTIONS</h3>
-        <p class="note-url">${url}</p>
+        <p class="note-url">${origin}</p>
         <div class="modal-buttons-vertical">
           <button id="updateReason" class="update-btn">UPDATE REASON</button>
           <button id="removePage" class="remove-btn">REMOVE PAGE</button>
@@ -159,11 +186,28 @@ async function savePage() {
 
   const reason = reasonInput.value.trim()
 
+  // Prevent saving without a reason
+  if (!reason) {
+    alert('Please provide a reason to save this page.')
+    return
+  }
+
   try {
     const { savedPages = [] } = await chrome.storage.local.get('savedPages')
+    // Save by domain origin and prevent duplicates
+    const origin = (() => {
+      try { return new URL(currentTabUrl).origin } catch { return currentTabUrl }
+    })()
+    if (savedPages.some((p) => (p.origin || new URL(p.url).origin) === origin)) {
+      alert('This domain is already saved.')
+      const modal = $('addPageModal')
+      if (modal) modal.classList.add('hidden')
+      loadNotes()
+      return
+    }
     savedPages.push({
-      url: currentTabUrl,
-      reason: reason,
+      origin,
+      reason,
       timestamp: Date.now(),
     })
 
@@ -214,7 +258,11 @@ async function updateStartButtonState() {
   const timerHint = $('timerHint')
 
   if (tab && tab.url && startButton && timerHint) {
-    const currentPage = savedPages.find((page) => page.url === tab.url)
+    // Enable timer only on saved domain origins
+    const currentOrigin = (() => {
+      try { return new URL(tab.url).origin } catch { return tab.url }
+    })()
+    const currentPage = savedPages.find((page) => (page.origin || page.url) === currentOrigin)
 
     if (!currentPage || !currentPage.reason) {
       startButton.disabled = true
