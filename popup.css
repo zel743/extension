@@ -3,13 +3,21 @@
   --card: #dcdde0;
   --stroke: #b8bac1;
   --text: #222;
-  --shadow: 0 1px 0 rgba(0,0,0,.06), 0 8px 20px rgba(0,0,0,.06);
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 8px 20px rgba(0, 0, 0, 0.06);
   --radius: 16px;
   --pad: 12px;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -18,7 +26,10 @@ body {
   font-size: 14px;
 }
 
-.hidden, .is-hidden { display: none !important; }
+.hidden,
+.is-hidden {
+  display: none !important;
+}
 
 .app {
   width: 360px;
@@ -38,7 +49,7 @@ body {
 .logo {
   text-align: center;
   font-weight: 700;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   font-size: 18px;
 }
 
@@ -51,34 +62,40 @@ body {
 }
 
 /* iOS-like switch */
-.switch { 
-  position: relative; 
-  width: 46px; 
-  height: 26px; 
-  display: inline-block; 
+.switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  display: inline-block;
 }
-.switch input { display: none; }
+.switch input {
+  display: none;
+}
 .slider {
-  position: absolute; 
+  position: absolute;
   inset: 0;
   background: #c9c7d4;
   border-radius: 100px;
-  transition: background .2s ease;
+  transition: background 0.2s ease;
 }
 .slider::after {
-  content: "";
-  position: absolute; 
-  left: 3px; 
+  content: '';
+  position: absolute;
+  left: 3px;
   top: 3px;
-  width: 20px; 
+  width: 20px;
   height: 20px;
-  background: white; 
+  background: white;
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0,0,0,.2);
-  transition: transform .2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
 }
-.switch input:checked + .slider { background: #6c63ff; }
-.switch input:checked + .slider::after { transform: translateX(20px); }
+.switch input:checked + .slider {
+  background: #6c63ff;
+}
+.switch input:checked + .slider::after {
+  transform: translateX(20px);
+}
 
 .panel .pomodoro-stats {
   background: #f1f1f4;
@@ -119,8 +136,8 @@ body {
   font-size: 12px;
   font-weight: 600;
 }
-.controls button:hover { 
-  background: #f6f6f8; 
+.controls button:hover {
+  background: #f6f6f8;
 }
 
 /* Modal styles */
@@ -143,7 +160,7 @@ body {
   border-radius: 12px;
   width: 320px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .modal-content h3 {
@@ -207,7 +224,7 @@ body {
 
 /* Button colors */
 #savePage {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
@@ -216,30 +233,32 @@ body {
 }
 
 #saveUpdateReason {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
 #saveUpdateReason:hover {
-  background-color: #1976D2;
+  background-color: #1976d2;
 }
 
-#removePage, #confirmDelete {
+#removePage,
+#confirmDelete {
   background-color: #f44336;
   color: white;
 }
 
-#removePage:hover, #confirmDelete:hover {
+#removePage:hover,
+#confirmDelete:hover {
   background-color: #d32f2f;
 }
 
 .update-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
 .update-btn:hover {
-  background-color: #1976D2;
+  background-color: #1976d2;
 }
 
 .remove-btn {
@@ -260,12 +279,18 @@ body {
   background-color: #bbb;
 }
 
-#cancelAddPage, #cancelNoteMenu, #cancelUpdateReason, #cancelDelete {
+#cancelAddPage,
+#cancelNoteMenu,
+#cancelUpdateReason,
+#cancelDelete {
   background-color: #ccc;
   color: #333;
 }
 
-#cancelAddPage:hover, #cancelNoteMenu:hover, #cancelUpdateReason:hover, #cancelDelete:hover {
+#cancelAddPage:hover,
+#cancelNoteMenu:hover,
+#cancelUpdateReason:hover,
+#cancelDelete:hover {
   background-color: #bbb;
 }
 
@@ -285,7 +310,7 @@ body {
 }
 
 .add-button {
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
   border: none;
   border-radius: 50%;
@@ -340,7 +365,7 @@ body {
 }
 
 .note:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .note-thumb {
@@ -385,11 +410,11 @@ body {
 
 /* Notification overlay */
 .notification {
-  position: fixed; 
-  inset: 0; 
-  display: grid; 
+  position: fixed;
+  inset: 0;
+  display: grid;
   place-items: center;
-  background: rgba(0,0,0,.35);
+  background: rgba(0, 0, 0, 0.35);
   z-index: 999;
 }
 
@@ -415,16 +440,16 @@ body {
 }
 
 .notification-buttons {
-  display: flex; 
-  gap: 8px; 
+  display: flex;
+  gap: 8px;
   justify-content: center;
 }
 
 .notification-buttons button {
   border: 1px solid var(--stroke);
-  background: #f6f6f8; 
-  padding: 8px 16px; 
-  border-radius: 8px; 
+  background: #f6f6f8;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
@@ -450,7 +475,7 @@ body {
     width: 100%;
     padding: 12px;
   }
-  
+
   .modal-content {
     width: 280px;
     margin: 0 10px;
