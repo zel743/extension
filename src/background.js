@@ -129,7 +129,11 @@ async function startTimer() {
     })
     if (tab && tab.url) {
       const { savedPages = [] } = await chrome.storage.local.get('savedPages')
-      const currentPage = savedPages.find((page) => page.url === tab.url)
+      // Match saved domain origins or full URLs for legacy entries
+      const origin = (() => {
+        try { return new URL(tab.url).origin } catch { return tab.url }
+      })()
+      const currentPage = savedPages.find((page) => (page.origin || new URL(page.url).origin) === origin)
 
       if (!currentPage || !currentPage.reason) {
         // Don't start timer if page is not saved or has no reason
@@ -260,17 +264,32 @@ function startEnforcer() {
         currentWindow: true,
       })
 
-      if (activeTab && activeTab.id !== currentTabId) {
-        // Redirect back to work tab first
-        chrome.tabs.update(currentTabId, { active: true })
+      if (activeTab) {
+        // Allow switching within saved domains: update focus target if on a saved origin
+        let allowSwitch = false
+        try {
+          const { savedPages = [] } = await chrome.storage.local.get('savedPages')
+          const origin = new URL(activeTab.url).origin
+          allowSwitch = savedPages.some((p) => p.origin === origin)
+        } catch {
+          allowSwitch = false
+        }
+        if (allowSwitch) {
+          currentTabId = activeTab.id
+          return
+        }
+        if (activeTab.id !== currentTabId) {
+          // Redirect back to work tab first
+          chrome.tabs.update(currentTabId, { active: true })
 
-        // Then show alert on the main work tab
-        setTimeout(() => {
-          showAlertNotification(
-            currentTabId,
-            `Please stay focused on this tab until the timer ends. \n ${currentPageReason}`,
-          )
-        }, 300)
+          // Then show alert on the main work tab
+          setTimeout(() => {
+            showAlertNotification(
+              currentTabId,
+              `Please stay focused on this tab until the timer ends. \n ${currentPageReason}`,
+            )
+          }, 300)
+        }
       }
     }
   }, 1000)
