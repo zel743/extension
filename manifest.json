@@ -8,15 +8,15 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "images/tomato16.jpg",
-      "48": "images/tomato48.jpg",
-      "128": "images/tomato128.jpg"
+      "16": "images/taza-caliente.png",
+      "48": "images/taza-caliente.png",
+      "128": "images/taza-caliente.png"
     }
   },
   "background": { "service_worker": "background.js" },
   "icons": {
     "16": "images/tomato16.jpg",
-    "48": "images/tomato48.jpg",
+    "48": "images/taza-caliente.png",
     "128": "images/tomato128.jpg"
   },
   "web_accessible_resources": [
@@ -30,5 +30,8 @@
       ],
       "matches": ["<all_urls>"]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 }

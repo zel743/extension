@@ -1,11 +1,18 @@
+// ====== Configuration ======
+const WORK_TIME = 10; // 10 seconds for testing (change to 25 * 60 for 25min)
+const BREAK_TIME = 5 * 60; // 5 minutes break
+
 let countdown;
-let time = 10; // pruebas
+let time = WORK_TIME;
 let isRunning = false;
 let isBreakTime = false;
+let currentTabId = null;
+let focusEnforcer = null;
 
+// ====== Main message listener ======
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.command === 'start') {
-    isBreakTime = false;         // <- mover aquí
+    isBreakTime = false;
     startTimer();
   } else if (message.command === 'stop') {
     stopTimer();
@@ -15,11 +22,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     startBreakTimer();
   } else if (message.command === 'skipBreak') {
     skipBreak();
-  } else if (message.command === 'getState') { // opcional
+  } else if (message.command === 'getState') {
     sendResponse({ time, isRunning, isBreakTime });
     return true;
   }
 });
+
 // ====== OpenDyslexic global ======
 const OD_SCRIPT_ID = 'od-global';
 const OD_CSS_FILE = 'font.css';
@@ -44,17 +52,14 @@ async function registerODGlobal() {
 async function unregisterODGlobal() {
   try {
     await chrome.scripting.unregisterContentScripts({ ids: [OD_SCRIPT_ID] });
-  } catch (e) {
-    // si no existe, ignorar
-  }
+  } catch (e) {}
 }
 
-// Aplica/quita en pestañas ya abiertas inmediatamente
 async function applyNowToAllOpenTabs(enable) {
   const tabs = await chrome.tabs.query({});
   for (const t of tabs) {
     const url = t.url || '';
-    if (!t.id || !/^https?:|^file:/.test(url)) continue; // no se puede en chrome://, WebStore, etc.
+    if (!t.id || !/^https?:|^file:/.test(url)) continue;
     try {
       if (enable) {
         await chrome.scripting.insertCSS({
@@ -67,9 +72,7 @@ async function applyNowToAllOpenTabs(enable) {
           files: [OD_CSS_FILE]
         });
       }
-    } catch (e) {
-      // algunas páginas restringidas fallan: ignorar
-    }
+    } catch (e) {}
   }
 }
 
@@ -86,7 +89,6 @@ initODGlobal();
 chrome.runtime.onInstalled.addListener(initODGlobal);
 chrome.runtime.onStartup?.addListener(initODGlobal);
 
-// Agrega este branch a tu listener onMessage existente
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.command === 'setODGlobal') {
     (async () => {
@@ -100,16 +102,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       await applyNowToAllOpenTabs(enable);
       sendResponse({ ok: true });
     })();
-    return true; // respuesta async
+    return true;
   }
-  // ...tus otros comandos start/stop/reset/etc siguen aquí...
 });
 
-function startTimer() {
+// ====== Pomodoro Timer Functions ======
+async function startTimer() {
   if (!isRunning) {
     isRunning = true;
-    // OJO: ya NO tocamos isBreakTime aquí
     clearInterval(countdown);
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab) currentTabId = tab.id;
+
+    startEnforcer();
+
     countdown = setInterval(() => {
       if (time > 0) {
         time--;
@@ -125,19 +132,20 @@ function stopTimer() {
   if (isRunning) {
     isRunning = false;
     clearInterval(countdown);
+    stopEnforcer();
   }
 }
 
 function resetTimer() {
   stopTimer();
   isBreakTime = false;
-  time = 10; // o 25 * 60
+  time = WORK_TIME;
   updatePopup();
 }
 
 function startBreakTimer() {
   isBreakTime = true;
-  time = 5 * 60; // 5 minutos de descanso
+  time = BREAK_TIME;
   startTimer();
 }
 
@@ -145,37 +153,22 @@ function skipBreak() {
   resetTimer();
 }
 
-function completeTimer() {
-  clearInterval(countdown);
-  isRunning = false;
-
-  // Marca notificación pendiente para cuando se abra el popup
-  chrome.storage.local.set({ pendingNotification: true });
-
-  // Intenta avisar si el popup ya estuviera abierto (evita error si no)
-  chrome.runtime.sendMessage({ showNotification: true }, () => {});
-  
-  // NO funciona sin gesto del usuario:
-  // chrome.action.openPopup(); // <- quítalo
-}
-
 function updatePopup() {
   let minutes = Math.floor(time / 60);
   let seconds = time % 60;
   minutes = minutes < 10 ? '0' + minutes : minutes;
   seconds = seconds < 10 ? '0' + seconds : seconds;
-
   chrome.runtime.sendMessage({ timer: `${minutes}:${seconds}` }, () => {});
 }
+
 function showSystemNotification() {
   const id = 'pomodoro-complete';
-
   chrome.notifications.create(id, {
     type: 'basic',
-    iconUrl: 'images/tomato128.jpg', // asegúrate de que exista
+    iconUrl: 'images/tomato128.jpg',
     title: '¡Tiempo terminado!',
     message: 'Toma un descanso de 5 minutos.',
-    requireInteraction: true,        // la mantiene visible hasta que el usuario interactúe (en macOS puede ignorarse)
+    requireInteraction: true,
     priority: 2,
     buttons: [
       { title: 'Iniciar descanso' },
@@ -184,39 +177,96 @@ function showSystemNotification() {
   });
 }
 
-// Click en botones de la notificación
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
   if (notificationId === 'pomodoro-complete') {
-    if (buttonIndex === 0) {
-      startBreakTimer();
-    } else if (buttonIndex === 1) {
-      skipBreak();
-    }
+    if (buttonIndex === 0) startBreakTimer();
+    else if (buttonIndex === 1) skipBreak();
     chrome.notifications.clear(notificationId);
     chrome.storage.local.remove('pendingNotification');
   }
 });
 
-// Click en el cuerpo de la notificación (opcional: abrir popup si quieres)
 chrome.notifications.onClicked.addListener((notificationId) => {
   if (notificationId === 'pomodoro-complete') {
     chrome.notifications.clear(notificationId);
-    // Intentar abrir el popup (solo funciona con gesto del usuario y puede fallar en algunas plataformas)
     if (chrome.action && chrome.action.openPopup) {
       try { chrome.action.openPopup(); } catch (e) {}
     }
   }
 });
+
 function completeTimer() {
   clearInterval(countdown);
   isRunning = false;
-
-  // Notificación del sistema
+  stopEnforcer();
   showSystemNotification();
-
-  // Flag para que el popup muestre el overlay si se abre después
   chrome.storage.local.set({ pendingNotification: true });
-
-  // Si el popup está abierto, avísale
   chrome.runtime.sendMessage({ showNotification: true }, () => {});
+}
+
+// ====== Alert Notification ======
+function showAlertNotification(tabId, message) {
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    func: (msg) => {
+      alert('⏰ Pomodoro Focus\n' + msg);
+    },
+    args: [message]
+  });
+}
+
+// ====== Tab Focus Enforcement ======
+function startEnforcer() {
+  if (focusEnforcer) return;
+  focusEnforcer = setInterval(async () => {
+    if (isRunning && !isBreakTime && currentTabId) {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (activeTab && activeTab.id !== currentTabId) {
+        // Redirect back to work tab first
+        chrome.tabs.update(currentTabId, { active: true });
+        
+        // Then show alert on the main work tab
+        setTimeout(() => {
+          showAlertNotification(currentTabId, 'Please stay focused on this tab until the timer ends.');
+        }, 300);
+      }
+    }
+  }, 1000);
+}
+
+function stopEnforcer() {
+  if (focusEnforcer) {
+    clearInterval(focusEnforcer);
+    focusEnforcer = null;
+  }
+}
+
+// ====== Tab Switching Prevention ======
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  handleTabChange(activeInfo.tabId);
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === "complete") {
+    handleTabChange(tabId);
+  }
+});
+
+function handleTabChange(newTabId) {
+  if (isRunning && !isBreakTime) {
+    if (currentTabId && newTabId !== currentTabId) {
+      // Redirect back to work tab first
+      chrome.tabs.update(currentTabId, { active: true });
+      
+      // Then show alert on the main work tab
+      setTimeout(() => {
+        showAlertNotification(currentTabId, 'You cannot change tabs until the timer ends. Stay focused on this tab!');
+      }, 300);
+    } else {
+      currentTabId = newTabId;
+    }
+  } else {
+    currentTabId = newTabId;
+  }
 }
