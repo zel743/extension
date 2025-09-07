@@ -1,0 +1,9 @@
+/* %%%%% UTILS %%%%% */
+@import './utils/vars.css';
+@import './utils/reset.css';
+
+/* %%%%% COMPONENTS %%%%% */
+
+/* %%%%% PAGES %%%%% */
+@import './pages/popup.css';
+
