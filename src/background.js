@@ -1,4 +1,6 @@
-// @ts-check
+// @ts-nocheck
+import { hello } from './pages/hello'
+hello()
 
 // ====== Configuration ======
 const WORK_TIME = 10 // 10 seconds for testing (change to 25 * 60 for 25min)
@@ -33,7 +35,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // ====== OpenDyslexic global ======
 const OD_SCRIPT_ID = 'od-global'
-const OD_CSS_FILE = 'font.css'
+const OD_CSS_FILE = 'public/font.css'
 
 async function registerODGlobal() {
   try {

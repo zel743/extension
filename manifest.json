@@ -21,7 +21,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["public", "font.css"],
+      "resources": ["public"],
       "matches": ["<all_urls>"]
     }
   ],
