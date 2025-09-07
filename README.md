@@ -83,7 +83,7 @@ Available scripts in `package.json`:
     "lint": "prettier . --check",
     "lint:fix": "prettier . --write",
     "build:dev": "bun build --outdir=dist src/background.js src/popup.js && bun run scripts/copy_files.js",
-    "build:prod": "bun build --production "
+    "build:prod": "bun build --production --outdir=dist src/background.js src/popup.js && bun run scripts/copy_files.js"
   }
 }
 ```
