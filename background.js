@@ -1,3 +1,5 @@
+// @ts-check
+
 // ====== Configuration ======
 const WORK_TIME = 10 // 10 seconds for testing (change to 25 * 60 for 25min)
 const BREAK_TIME = 5 * 60 // 5 minutes break
@@ -256,7 +258,10 @@ function startEnforcer() {
 
         // Then show alert on the main work tab
         setTimeout(() => {
-          showAlertNotification(currentTabId, 'Please stay focused on this tab until the timer ends.')
+          showAlertNotification(
+            currentTabId,
+            `Please stay focused on this tab until the timer ends. \n ${currentPageReason}`,
+          )
         }, 300)
       }
     }
@@ -267,37 +272,5 @@ function stopEnforcer() {
   if (focusEnforcer) {
     clearInterval(focusEnforcer)
     focusEnforcer = null
-  }
-}
-
-// ====== Tab Switching Prevention ======
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  handleTabChange(activeInfo.tabId)
-})
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete') {
-    handleTabChange(tabId)
-  }
-})
-
-function handleTabChange(newTabId) {
-  if (isRunning && !isBreakTime) {
-    if (currentTabId && newTabId !== currentTabId) {
-      // Redirect back to work tab first
-      chrome.tabs.update(currentTabId, { active: true })
-
-      // Then show alert on the main work tab
-      setTimeout(() => {
-        showAlertNotification(
-          currentTabId,
-          'You cannot change tabs until the timer ends. Stay focused on this tab!',
-        )
-      }, 300)
-    } else {
-      currentTabId = newTabId
-    }
-  } else {
-    currentTabId = newTabId
   }
 }
