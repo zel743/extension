@@ -11,7 +11,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 2) Pintar tiempo actual del timer
   chrome.runtime.sendMessage({ command: 'getState' }, (state) => {
-    if (!state) return;
+    if (!state) {
+      $('timer').textContent = '00:10'; // valor inicial por defecto
+      return;
+    }
     const minutes = Math.floor(state.time / 60).toString().padStart(2, '0');
     const seconds = (state.time % 60).toString().padStart(2, '0');
     $('timer').textContent = `${minutes}:${seconds}`;
@@ -50,18 +53,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       await chrome.runtime.sendMessage({ command: 'setODGlobal', enabled });
     } catch (err) {
       console.error('Error al aplicar OpenDyslexic global:', err);
-      // revertir visual si falla
       toggleOD.checked = !enabled;
     }
   });
 });
 
 // 6) Listener para actualizaciones en tiempo real desde el background
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message) => {
   if (message.timer) {
     $('timer').textContent = message.timer;
   }
   if (message.showNotification) {
     $('notification')?.classList.remove('hidden');
+  }
+});
+// Timer toggle functionality
+const timerToggle = $('toggleTimer');
+const timerSection = $('timerSection');
+
+timerToggle?.addEventListener('change', function () {
+  if (this.checked) {
+    timerSection.classList.remove('is-hidden');
+  } else {
+    timerSection.classList.add('is-hidden');
   }
 });

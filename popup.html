@@ -1,36 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Pomodoro Timer</title>
-    <link rel="stylesheet" type="text/css" href="popup.css">
+  <meta charset="utf-8" />
+  <title>TDAH App</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <div id="notification" class="notification hidden">
-        <div class="notification-content">
-            <h3>Time is up!</h3>
-            <p>Take a break, your session is complete.</p>
-            <div class="notification-buttons">
-                <button id="startBreak">Start Break</button>
-                <button id="skipBreak">Skip Break</button>
-            </div>
-        </div>
+  <!-- Notification -->
+  <div id="notification" class="notification hidden">
+    <div class="notification-content">
+      <h3>Time is up!</h3>
+      <p>Take a break, your session is complete.</p>
+      <div class="notification-buttons">
+        <button id="startBreak">Start Break</button>
+        <button id="skipBreak">Skip Break</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- LOGO block -->
+    <div class="block logo">LOGO</div>
+
+    <!-- OPTION: Change Font -->
+    <div class="block option">
+      <span>CHANGE FONT</span>
+      <label class="switch">
+        <input type="checkbox" id="toggleOpenDyslexic">
+        <span class="slider"></span>
+      </label>
     </div>
 
-    <div id="main-content">
-        <h1>TDAH App</h1>
-        <h2>Pomodoro Timer</h2>
-        <div id="timer">00:10</div>
+    <!-- OPTION: Timer Toggle -->
+    <div class="block option">
+      <span>SHOW TIMER</span>
+      <label class="switch">
+        <input type="checkbox" id="toggleTimer">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Simplified Pomodoro section (hidden by default) -->
+    <div id="timerSection" class="block panel is-hidden">
+      <span>POMODORO TIMER</span>
+      <div id="timer" class="timer">25:00</div>
+      <div class="controls">
         <button id="start">Start</button>
         <button id="stop">Stop</button>
         <button id="reset">Reset</button>
-        <br>
-   </div>
-<div style="margin-top:12px">
-  <label>
-    <input type="checkbox" id="toggleOpenDyslexic" />
-    Cambiar Fuente 
-  </label>
-</div> 
-    <script src="popup.js"></script>
+      </div>
+    </div>
+
+    <!-- Notes list area -->
+    <div class="block notes">
+      <div class="note">
+        <div class="note-thumb"></div>
+        <button class="kebab" aria-label="note menu">…</button>
+      </div>
+      <div class="note">
+        <div class="note-thumb"></div>
+        <button class="kebab" aria-label="note menu">…</button>
+      </div>
+      <div class="note">
+        <div class="note-thumb"></div>
+        <button class="kebab" aria-label="note menu">…</button>
+      </div>
+      <div class="note">
+        <div class="note-thumb"></div>
+        <button class="kebab" aria-label="note menu">…</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Your timer logic -->
+  <script src="popup.js"></script>
+  
 </body>
 </html>

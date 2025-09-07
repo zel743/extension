@@ -5,7 +5,7 @@ let isBreakTime = false;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.command === 'start') {
-    isBreakTime = false;         // <- mover aquí
+    isBreakTime = false;
     startTimer();
   } else if (message.command === 'stop') {
     stopTimer();
@@ -15,11 +15,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     startBreakTimer();
   } else if (message.command === 'skipBreak') {
     skipBreak();
-  } else if (message.command === 'getState') { // opcional
+  } else if (message.command === 'getState') {
     sendResponse({ time, isRunning, isBreakTime });
     return true;
   }
 });
+
 // ====== OpenDyslexic global ======
 const OD_SCRIPT_ID = 'od-global';
 const OD_CSS_FILE = 'font.css';
@@ -44,17 +45,14 @@ async function registerODGlobal() {
 async function unregisterODGlobal() {
   try {
     await chrome.scripting.unregisterContentScripts({ ids: [OD_SCRIPT_ID] });
-  } catch (e) {
-    // si no existe, ignorar
-  }
+  } catch (e) {}
 }
 
-// Aplica/quita en pestañas ya abiertas inmediatamente
 async function applyNowToAllOpenTabs(enable) {
   const tabs = await chrome.tabs.query({});
   for (const t of tabs) {
     const url = t.url || '';
-    if (!t.id || !/^https?:|^file:/.test(url)) continue; // no se puede en chrome://, WebStore, etc.
+    if (!t.id || !/^https?:|^file:/.test(url)) continue;
     try {
       if (enable) {
         await chrome.scripting.insertCSS({
@@ -67,9 +65,7 @@ async function applyNowToAllOpenTabs(enable) {
           files: [OD_CSS_FILE]
         });
       }
-    } catch (e) {
-      // algunas páginas restringidas fallan: ignorar
-    }
+    } catch (e) {}
   }
 }
 
@@ -86,7 +82,6 @@ initODGlobal();
 chrome.runtime.onInstalled.addListener(initODGlobal);
 chrome.runtime.onStartup?.addListener(initODGlobal);
 
-// Agrega este branch a tu listener onMessage existente
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.command === 'setODGlobal') {
     (async () => {
@@ -100,15 +95,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       await applyNowToAllOpenTabs(enable);
       sendResponse({ ok: true });
     })();
-    return true; // respuesta async
+    return true;
   }
-  // ...tus otros comandos start/stop/reset/etc siguen aquí...
 });
 
+// ====== Pomodoro ======
 function startTimer() {
   if (!isRunning) {
     isRunning = true;
-    // OJO: ya NO tocamos isBreakTime aquí
     clearInterval(countdown);
     countdown = setInterval(() => {
       if (time > 0) {
@@ -145,37 +139,22 @@ function skipBreak() {
   resetTimer();
 }
 
-function completeTimer() {
-  clearInterval(countdown);
-  isRunning = false;
-
-  // Marca notificación pendiente para cuando se abra el popup
-  chrome.storage.local.set({ pendingNotification: true });
-
-  // Intenta avisar si el popup ya estuviera abierto (evita error si no)
-  chrome.runtime.sendMessage({ showNotification: true }, () => {});
-  
-  // NO funciona sin gesto del usuario:
-  // chrome.action.openPopup(); // <- quítalo
-}
-
 function updatePopup() {
   let minutes = Math.floor(time / 60);
   let seconds = time % 60;
   minutes = minutes < 10 ? '0' + minutes : minutes;
   seconds = seconds < 10 ? '0' + seconds : seconds;
-
   chrome.runtime.sendMessage({ timer: `${minutes}:${seconds}` }, () => {});
 }
+
 function showSystemNotification() {
   const id = 'pomodoro-complete';
-
   chrome.notifications.create(id, {
     type: 'basic',
-    iconUrl: 'images/tomato128.jpg', // asegúrate de que exista
+    iconUrl: 'images/tomato128.jpg',
     title: '¡Tiempo terminado!',
     message: 'Toma un descanso de 5 minutos.',
-    requireInteraction: true,        // la mantiene visible hasta que el usuario interactúe (en macOS puede ignorarse)
+    requireInteraction: true,
     priority: 2,
     buttons: [
       { title: 'Iniciar descanso' },
@@ -184,39 +163,28 @@ function showSystemNotification() {
   });
 }
 
-// Click en botones de la notificación
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
   if (notificationId === 'pomodoro-complete') {
-    if (buttonIndex === 0) {
-      startBreakTimer();
-    } else if (buttonIndex === 1) {
-      skipBreak();
-    }
+    if (buttonIndex === 0) startBreakTimer();
+    else if (buttonIndex === 1) skipBreak();
     chrome.notifications.clear(notificationId);
     chrome.storage.local.remove('pendingNotification');
   }
 });
 
-// Click en el cuerpo de la notificación (opcional: abrir popup si quieres)
 chrome.notifications.onClicked.addListener((notificationId) => {
   if (notificationId === 'pomodoro-complete') {
     chrome.notifications.clear(notificationId);
-    // Intentar abrir el popup (solo funciona con gesto del usuario y puede fallar en algunas plataformas)
     if (chrome.action && chrome.action.openPopup) {
       try { chrome.action.openPopup(); } catch (e) {}
     }
   }
 });
+
 function completeTimer() {
   clearInterval(countdown);
   isRunning = false;
-
-  // Notificación del sistema
   showSystemNotification();
-
-  // Flag para que el popup muestre el overlay si se abre después
   chrome.storage.local.set({ pendingNotification: true });
-
-  // Si el popup está abierto, avísale
   chrome.runtime.sendMessage({ showNotification: true }, () => {});
 }
