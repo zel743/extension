@@ -173,3 +173,11 @@ Contributions are welcome! Please:
 ## License
 
 This project is licensed under the ISC License (see `package.json`).
+
+## Challenges I Ran Into
+
+- **Service Worker Lifespan:** Managing the background service worker lifecycle in Manifest V3 was tricky due to its ephemeral nature.
+- **Permission Handling:** Configuring and requesting browser permissions (alarms, notifications, storage) required careful coordination to avoid unexpected errors.
+- **Asset Bundling:** Ensuring all static assets (fonts, images, CSS) were correctly copied and referenced in the build output demanded a custom copy script.
+- **Timer Accuracy:** Implementing reliable Pomodoro timers across suspended service workers and browser throttle policies posed timing accuracy challenges.
+- **Accessible UI Design:** Creating a simple and accessible popup UI for ADHD users required extra attention to focus states, contrast, and usability.
