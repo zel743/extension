@@ -355,11 +355,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateStartButtonState()
 
   // 1) Mostrar notificación si el background dejó una pendiente
-  const { pendingNotification } = await chrome.storage.local.get('pendingNotification')
+  const { pendingNotification, breakCompleted } = await chrome.storage.local.get(['pendingNotification', 'breakCompleted'])
+  
   if (pendingNotification) {
-    const notification = $('notification')
-    if (notification) notification.classList.remove('hidden')
-    chrome.storage.local.remove('pendingNotification')
+    if (breakCompleted) {
+      // Show break completion notification
+      const breakNotification = $('breakCompleteNotification')
+      if (breakNotification) breakNotification.classList.remove('hidden')
+    } else {
+      // Show work completion notification
+      const workNotification = $('notification')
+      if (workNotification) workNotification.classList.remove('hidden')
+    }
+    chrome.storage.local.remove(['pendingNotification', 'breakCompleted'])
   }
 
   // 2) Pintar tiempo actual del timer
@@ -471,7 +479,32 @@ chrome.runtime.onMessage.addListener((message) => {
     if (timerElement) timerElement.textContent = message.timer
   }
   if (message.showNotification) {
-    const notification = $('notification')
-    if (notification) notification.classList.remove('hidden')
+    if (message.isBreakComplete) {
+      // Show break completion notification
+      const breakNotification = $('breakCompleteNotification')
+      if (breakNotification) breakNotification.classList.remove('hidden')
+    } else {
+      // Show work completion notification
+      const workNotification = $('notification')
+      if (workNotification) workNotification.classList.remove('hidden')
+    }
   }
 })
+// Break completion notification buttons
+const startWorkButton = $('startWork')
+if (startWorkButton) {
+  startWorkButton.addEventListener('click', () => {
+    const notification = $('breakCompleteNotification')
+    if (notification) notification.classList.add('hidden')
+    chrome.runtime.sendMessage({ command: 'start' })
+  })
+}
+
+const notNowButton = $('notNow')
+if (notNowButton) {
+  notNowButton.addEventListener('click', () => {
+    const notification = $('breakCompleteNotification')
+    if (notification) notification.classList.add('hidden')
+    chrome.runtime.sendMessage({ command: 'reset' })
+  })
+}

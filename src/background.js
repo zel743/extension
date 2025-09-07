@@ -216,25 +216,62 @@ function showSystemNotification(message = 'Toma un descanso de 5 minutos.') {
 }
 
 // Modify the completeTimer function to include the reason
+// Modify the completeTimer function to handle both cases
 function completeTimer() {
   clearInterval(countdown)
   isRunning = false
   stopEnforcer()
 
-  // Include the reason in the notification
-  const notificationMessage = currentPageReason
-    ? `"${currentPageReason}" - Time's up! Take a 5 minute break.`
-    : 'Toma un descanso de 5 minutos.'
+  if (isBreakTime) {
+    // Break timer just ended - reset back to work mode
+    isBreakTime = false
+    time = WORK_TIME
+    
+    // Store break completion state
+    chrome.storage.local.set({ 
+      pendingNotification: true, 
+      breakCompleted: true 
+    })
+    
+    // Send message to show break completion notification
+    chrome.runtime.sendMessage({ 
+      showNotification: true,
+      isBreakComplete: true 
+    })
+    
+  } else {
+    // Work timer ended - offer break
+    const notificationMessage = currentPageReason
+      ? `"${currentPageReason}" - Time's up! Take a 5 minute break.`
+      : 'Toma un descanso de 5 minutos.'
 
-  showSystemNotification(notificationMessage)
-  chrome.storage.local.set({ pendingNotification: true })
-  chrome.runtime.sendMessage({ showNotification: true }, () => {})
+    showSystemNotification(notificationMessage)
+    
+    // Store work completion state
+    chrome.storage.local.set({ 
+      pendingNotification: true, 
+      breakCompleted: false 
+    })
+    
+    // Send message to show work completion notification
+    chrome.runtime.sendMessage({ 
+      showNotification: true,
+      isBreakComplete: false 
+    })
+  }
+
+  updatePopup()
 }
 
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
   if (notificationId === 'pomodoro-complete') {
-    if (buttonIndex === 0) startBreakTimer()
-    else if (buttonIndex === 1) skipBreak()
+    if (buttonIndex === 0) {
+      // Start Break button clicked (from system notification)
+      startBreakTimer()
+    } else if (buttonIndex === 1) {
+      // Skip Break button clicked (from system notification)
+      skipBreak()
+    }
     chrome.notifications.clear(notificationId)
     chrome.storage.local.remove('pendingNotification')
   }
