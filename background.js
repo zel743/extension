@@ -184,7 +184,7 @@ function showSystemNotification(message = 'Toma un descanso de 5 minutos.') {
   const id = 'pomodoro-complete'
   chrome.notifications.create(id, {
     type: 'basic',
-    iconUrl: 'images/tomato128.jpg',
+    iconUrl: 'public/images/tomato128.jpg',
     title: '¡Tiempo terminado!',
     message: message,
     requireInteraction: true,
