@@ -3,8 +3,8 @@ import { hello } from './pages/hello'
 hello()
 
 // ====== Configuration ======
-const WORK_TIME = 10 // 10 seconds for testing (change to 25 * 60 for 25min)
-const BREAK_TIME = 5 // 5 minutes break
+const WORK_TIME = 25 * 60 // 10 seconds for testing (change to 25 * 60 for 25min)
+const BREAK_TIME = 5 * 60 // 5 minutes break (5 * 60)
 
 let countdown
 let time = WORK_TIME
@@ -133,7 +133,11 @@ async function startTimer() {
       const { savedPages = [] } = await chrome.storage.local.get('savedPages')
       // Match saved domain origins or full URLs for legacy entries
       const origin = (() => {
-        try { return new URL(tab.url).origin } catch { return tab.url }
+        try {
+          return new URL(tab.url).origin
+        } catch {
+          return tab.url
+        }
       })()
       const currentPage = savedPages.find((page) => (page.origin || new URL(page.url).origin) === origin)
 
