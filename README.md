@@ -1,6 +1,6 @@
-# Pomodoro Timer Browser Extension
+# Pomodoro Timer Web Extension for ADHD
 
-A simple **Pomodoro Timer** to help you manage your work and break sessions directly from your browser toolbar.
+This web extension is designed for people with ADHD. It helps you focus on your work by breaking tasks into manageable time intervals using the Pomodoro Technique.
 
 ## Table of Contents
 
