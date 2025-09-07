@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "prettier . --check",
-    "lint:fix": "prettier . --write"
+    "lint:fix": "prettier . --write",
+    "build:dev": "bun --outdir=dist",
+    "build:prod": "bun build --production "
   },
   "repository": {
     "type": "git",
@@ -15,7 +17,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/zel743/extension/issues"
   },
