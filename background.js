@@ -8,6 +8,7 @@ let isRunning = false;
 let isBreakTime = false;
 let currentTabId = null;
 let focusEnforcer = null;
+let currentPageReason = '';
 
 // ====== Main message listener ======
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -109,12 +110,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // ====== Pomodoro Timer Functions ======
 async function startTimer() {
   if (!isRunning) {
+    // Check if current page is in saved list with a reason
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab && tab.url) {
+      const { savedPages = [] } = await chrome.storage.local.get('savedPages');
+      const currentPage = savedPages.find(page => page.url === tab.url);
+      
+      if (!currentPage || !currentPage.reason) {
+        // Don't start timer if page is not saved or has no reason
+        console.log('Cannot start timer: Page not saved or no reason provided');
+        return;
+      }
+      
+      currentTabId = tab.id;
+      currentPageReason = currentPage.reason; // Store the reason for notifications
+    }
+
     isRunning = true;
     clearInterval(countdown);
-
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) currentTabId = tab.id;
-
     startEnforcer();
 
     countdown = setInterval(() => {
@@ -161,13 +174,14 @@ function updatePopup() {
   chrome.runtime.sendMessage({ timer: `${minutes}:${seconds}` }, () => {});
 }
 
-function showSystemNotification() {
+// Modify showSystemNotification to accept custom message
+function showSystemNotification(message = 'Toma un descanso de 5 minutos.') {
   const id = 'pomodoro-complete';
   chrome.notifications.create(id, {
     type: 'basic',
     iconUrl: 'images/tomato128.jpg',
     title: '¡Tiempo terminado!',
-    message: 'Toma un descanso de 5 minutos.',
+    message: message,
     requireInteraction: true,
     priority: 2,
     buttons: [
@@ -175,6 +189,22 @@ function showSystemNotification() {
       { title: 'Omitir' }
     ]
   });
+}
+
+// Modify the completeTimer function to include the reason
+function completeTimer() {
+  clearInterval(countdown);
+  isRunning = false;
+  stopEnforcer();
+  
+  // Include the reason in the notification
+  const notificationMessage = currentPageReason 
+    ? `"${currentPageReason}" - Time's up! Take a 5 minute break.`
+    : 'Toma un descanso de 5 minutos.';
+  
+  showSystemNotification(notificationMessage);
+  chrome.storage.local.set({ pendingNotification: true });
+  chrome.runtime.sendMessage({ showNotification: true }, () => {});
 }
 
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
@@ -194,15 +224,6 @@ chrome.notifications.onClicked.addListener((notificationId) => {
     }
   }
 });
-
-function completeTimer() {
-  clearInterval(countdown);
-  isRunning = false;
-  stopEnforcer();
-  showSystemNotification();
-  chrome.storage.local.set({ pendingNotification: true });
-  chrome.runtime.sendMessage({ showNotification: true }, () => {});
-}
 
 // ====== Alert Notification ======
 function showAlertNotification(tabId, message) {
@@ -226,9 +247,23 @@ function startEnforcer() {
         // Redirect back to work tab first
         chrome.tabs.update(currentTabId, { active: true });
         
+        // Get the saved reason for this tab
+        const { savedPages = [] } = await chrome.storage.local.get('savedPages');
+        const [currentTab] = await chrome.tabs.get(currentTabId);
+        
+        let alertMessage = 'Please stay focused on this tab until the timer ends.';
+        
+        // Add the reason if available
+        if (currentTab && currentTab.url) {
+          const pageInfo = savedPages.find(page => page.url === currentTab.url);
+          if (pageInfo && pageInfo.reason) {
+            alertMessage += `\n\nRemember: ${pageInfo.reason}`;
+          }
+        }
+        
         // Then show alert on the main work tab
         setTimeout(() => {
-          showAlertNotification(currentTabId, 'Please stay focused on this tab until the timer ends.');
+          showAlertNotification(currentTabId, alertMessage);
         }, 300);
       }
     }
@@ -253,15 +288,29 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-function handleTabChange(newTabId) {
+async function handleTabChange(newTabId) {
   if (isRunning && !isBreakTime) {
     if (currentTabId && newTabId !== currentTabId) {
       // Redirect back to work tab first
       chrome.tabs.update(currentTabId, { active: true });
       
+      // Get the saved reason for this tab
+      const { savedPages = [] } = await chrome.storage.local.get('savedPages');
+      const [currentTab] = await chrome.tabs.get(currentTabId);
+      
+      let alertMessage = 'You cannot change tabs until the timer ends. Stay focused on this tab!';
+      
+      // Add the reason if available
+      if (currentTab && currentTab.url) {
+        const pageInfo = savedPages.find(page => page.url === currentTab.url);
+        if (pageInfo && pageInfo.reason) {
+          alertMessage += `\n\nRemember: ${pageInfo.reason}`;
+        }
+      }
+      
       // Then show alert on the main work tab
       setTimeout(() => {
-        showAlertNotification(currentTabId, 'You cannot change tabs until the timer ends. Stay focused on this tab!');
+        showAlertNotification(currentTabId, alertMessage);
       }, 300);
     } else {
       currentTabId = newTabId;

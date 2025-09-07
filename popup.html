@@ -18,6 +18,30 @@
     </div>
   </div>
 
+  <!-- Add Page Modal -->
+  <div id="addPageModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>WHY DO YOU NEED THIS PAGE?</h3>
+      <textarea id="pageReason" placeholder="Enter your reason for saving this page..." rows="3"></textarea>
+      <div class="modal-buttons">
+        <button id="savePage">SAVE PAGE</button>
+        <button id="cancelAddPage">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note Menu Modal -->
+  <div id="noteMenuModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>WHY DO YOU NEED THIS PAGE?</h3>
+      <p id="noteMenuUrl" class="note-url"></p>
+      <div class="modal-buttons">
+        <button id="removePage">REMOVE PAGE</button>
+        <button id="cancelNoteMenu">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
   <div class="app">
     <!-- LOGO block -->
     <div class="block logo">LOGO</div>
@@ -42,35 +66,52 @@
 
     <!-- Simplified Pomodoro section (hidden by default) -->
     <div id="timerSection" class="block panel is-hidden">
-      <span><b>POMODORO TIMER</b></span>
-      <div id="timer" class="timer">25:00</div>
-      <div class="controls">
+    <span><b>POMODORO TIMER</b></span>
+    <div id="timer" class="timer">25:00</div>
+    <div id="timerHint" class="timer-hint hidden">
+        Save this page with a reason to enable timer
+    </div>
+    <div class="controls">
         <button id="start">Start</button>
         <button id="stop">Stop</button>
         <button id="reset">Reset</button>
-      </div>
     </div>
-
+    </div>
     <!-- Notes list area -->
     <div class="block notes">
-      <div class="note">
-        <div class="note-thumb"></div>
-        <button class="kebab" aria-label="note menu">…</button>
+      <div class="notes-header">
+        <h3>SAVED PAGES</h3>
+        <button id="addCurrentPage" class="add-button" title="Add current page">+</button>
       </div>
-      <div class="note">
-        <div class="note-thumb"></div>
-        <button class="kebab" aria-label="note menu">…</button>
-      </div>
-      <div class="note">
-        <div class="note-thumb"></div>
-        <button class="kebab" aria-label="note menu">…</button>
-      </div>
-      <div class="note">
-        <div class="note-thumb"></div>
-        <button class="kebab" aria-label="note menu">…</button>
+      <div id="notesList" class="notes-list">
+        <!-- Notes will be dynamically added here -->
       </div>
     </div>
   </div>
+
+  <!-- Update Reason Modal -->
+<div id="updateReasonModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>UPDATE REASON</h3>
+    <textarea id="updateReasonText" placeholder="Update your reason for this page..." rows="3"></textarea>
+    <div class="modal-buttons">
+      <button id="saveUpdateReason">UPDATE</button>
+      <button id="cancelUpdateReason">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="confirmDeleteModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>CONFIRM DELETE</h3>
+    <p>Are you sure you have completed your objective with this page?</p>
+    <div class="modal-buttons">
+      <button id="confirmDelete">YES, DELETE</button>
+      <button id="cancelDelete">CANCEL</button>
+    </div>
+  </div>
+</div>
 
   <!-- Your timer logic -->
   <script src="popup.js"></script>
