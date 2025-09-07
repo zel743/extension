@@ -4,7 +4,7 @@ hello()
 
 // ====== Configuration ======
 const WORK_TIME = 10 // 10 seconds for testing (change to 25 * 60 for 25min)
-const BREAK_TIME = 5 * 60 // 5 minutes break
+const BREAK_TIME = 5 // 5 minutes break
 
 let countdown
 let time = WORK_TIME
@@ -16,7 +16,13 @@ let currentPageReason = ''
 
 // ====== Main message listener ======
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.command === 'start') {
+  if (message.command === 'openSavedPage') {
+    ;(async () => {
+      const tab = await chrome.tabs.create({ url: message.url })
+      if (isRunning && !isBreakTime) currentTabId = tab.id
+    })()
+    return true
+  } else if (message.command === 'start') {
     isBreakTime = false
     startTimer()
   } else if (message.command === 'stop') {

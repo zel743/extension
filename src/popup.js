@@ -34,6 +34,14 @@ async function loadNotes() {
       <button class="kebab" data-index="${index}" aria-label="note menu">…</button>
     `
     notesList.appendChild(noteElement)
+    // Allow opening saved page and update focus to new tab
+    const thumb = noteElement.querySelector('.note-thumb')
+    if (thumb) {
+      thumb.addEventListener('click', () => {
+        chrome.runtime.sendMessage({ command: 'openSavedPage', url: note.url })
+        window.close()
+      })
+    }
   })
 
   // Add event listeners to kebab buttons
@@ -161,6 +169,14 @@ async function savePage() {
 
   try {
     const { savedPages = [] } = await chrome.storage.local.get('savedPages')
+    // Prevent adding duplicate pages by URL
+    if (savedPages.some((p) => p.url === currentTabUrl)) {
+      alert('This page is already saved.')
+      const modal = $('addPageModal')
+      if (modal) modal.classList.add('hidden')
+      loadNotes()
+      return
+    }
     savedPages.push({
       url: currentTabUrl,
       reason: reason,
