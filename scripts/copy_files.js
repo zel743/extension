@@ -27,7 +27,7 @@ function copiarEntradas(entradas, destino) {
 }
 
 // Ejemplo de uso
-const entradasParaCopiar = ['popup.html', 'manifest.json', 'public', 'src/styles']
+const entradasParaCopiar = ['popup.html', 'manifest.json', 'public', 'src/styles', 'docs']
 
 const directorioDestino = './dist'
 
